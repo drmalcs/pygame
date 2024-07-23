@@ -4,6 +4,9 @@ To run:
 - check the versions in pyproject.toml and make sure you have the same or greater for those python packages
 - python3 pacman.py
 
+There is a video screengrab of a couple of short games being played in drmalcs_pikmon_game_screengrab.webm
+Navigate to it in a web browser to play (or type something like file://path/to/file/)
+
 q to quit
 r to restart
 
