@@ -23,6 +23,7 @@ HEIGHT = NUM_TILES_HIGH * TILE_HEIGHT
 PLAYER_WIDTH = int(TILE_WIDTH *0.8)
 PLAYER_HEIGHT = int(TILE_HEIGHT *0.8)
 COUNTDOWN = 10 ### Length of game in seconds
+PLAYER_NUM_LIVES = 3
 
 def create_board(width, height):
     #create an array where every element is a number that signifies what kind of tile it is
@@ -145,6 +146,7 @@ def draw_player(screen, player_sprite, counter, player_x, player_y, direction):
 def draw_sprites_under_player(screen, sprites_under_player_list, player_x, player_y):
     for sprite in sprites_under_player_list:
         ## if sprite lifespan is zero, don't draw but instead remove from list
+        ## temporary sprites will have lifespan reduced as time goes on
         if sprite.lifespan == 0:
             sprites_under_player_list.remove(sprite)
             continue
@@ -181,6 +183,74 @@ class Sprite_list_item:
     def get_curr_y(self, frame_num):
         return self.sprite_height_px*(frame_num//self.num_sprites_in_row)
     
+################################################################################################################
+class player:
+    def __init__(self, sprite_sheet, pos_x, pos_y, direction = 'left', num_lives = PLAYER_NUM_LIVES,
+                 width=PLAYER_WIDTH, height=PLAYER_HEIGHT, tile_width=TILE_WIDTH, tile_height=TILE_HEIGHT):
+        self.sprite_sheet = sprite_sheet
+        self.x = pos_x
+        self.y = pos_y
+        ###self.num_sprites_in_col = num_sprites_in_col  ###use if player images are in a single spritesheet
+        ###self.num_sprites_in_row = num_sprites_in_row  ##current player anim is bunch of images
+        self.direction = direction
+        self.width = width
+        self.height = height
+        self.tile_width = tile_width
+        self.tile_height = tile_height
+        self.tile_center_x = int((pos_x+self.width/2)//self.tile_width)
+        self.tile_center_y = int((pos_y+self.height/2)//self.tile_height)
+        self.num_lives = num_lives
+
+    def print(self):
+        print(self.get_tile_x_left(), self.get_tile_x_right(), self.get_tile_y_top(), self.get_tile_y_bot(), self.x, self.y)
+            
+
+    def get_tile_x_left(self):
+        return int((self.x)//self.tile_width)
+    def get_tile_x_right(self):
+        return int((self.x+self.width)//self.tile_width)
+    def get_tile_y_top(self):
+        return int((self.y)//self.tile_height)
+    def get_tile_y_bot(self):
+        return int((self.y+self.height)//self.tile_height)
+    def get_tile_at_center_x(self):
+        return int((self.x+self.width/2)//self.tile_width)
+    def get_tile_at_center_y(self):
+        return int((self.y+self.height/2)//self.tile_height)
+    def lose_a_life(self):
+        """
+        Decrements the number of lives by one.
+        This function is used to update the number of lives the player has. It subtracts one from the current number of lives.
+        Parameters:
+            self (object): The instance of the class.
+        Returns:
+            None
+        """
+        self.num_lives -= 1
+
+    def new_tile_type_after_move(self, move_dist_in_px, direction):
+        if direction == 'left':
+            return int( (self.x-move_dist_in_px)//self.tile_width)
+        elif direction == 'right':
+            return int( (self.x+self.width+move_dist_in_px)//self.tile_width)
+        elif direction == 'up':
+            return int( (self.y-move_dist_in_px)//self.tile_height)
+        elif direction == 'down':
+            return int( (self.y+self.height+move_dist_in_px)//self.tile_height)
+    def draw_player(self, screen, counter):
+        ## player always looks left unless it's going right
+        if self.direction == 'left':
+            screen.blit(self.sprite_sheet[counter//5], (self.x, self.y))
+        if self.direction == 'down':
+            screen.blit(self.sprite_sheet[counter//5], (self.x, self.y))
+        if self.direction == 'right':
+            screen.blit(pygame.transform.flip(self.sprite_sheet[counter//5], True, False), (self.x, self.y))
+        if self.direction == 'up':
+            screen.blit(self.sprite_sheet[counter//5], (self.x, self.y))
+
+
+
+####END OF PLAYER CLASS#########################################################################################
 ################################################################################################################
 def draw_text(screen, text, size, x, y, colour=(255, 255, 255), mode=0):
     font = pygame.font.Font(pygame.font.get_default_font(), size)
@@ -220,12 +290,15 @@ def main():
     board = create_board(NUM_TILES_WIDE, NUM_TILES_HIGH)
     ##print(board) ### print the boards tiles to the console
     run = True
-    player_x, player_y, player_direction = WIDTH//2, HEIGHT//2, 0  ## temp; 
+    player_x, player_y, player_direction = WIDTH//2, HEIGHT//2, 'left'  ## temp; 
     game_countdown, game_countdown_text = COUNTDOWN, str(COUNTDOWN).rjust(3)
     player_frame_counter=0
     player_movement_per_frame = TILE_WIDTH//5
     sprites_under_player_list = []
 
+    player1 = player(player_sprite, WIDTH//2, HEIGHT//2, player_direction, num_lives = PLAYER_NUM_LIVES,
+                 width=PLAYER_WIDTH, height=PLAYER_HEIGHT, tile_width=TILE_WIDTH, tile_height=TILE_HEIGHT)
+ #### TODO: add player into while loop in parallel I guess
     while run:
         timer.tick(fps)
         if player_frame_counter < 19:
@@ -238,14 +311,8 @@ def main():
         ### whether the sprite should be taken off the list, that is, the sprite is now dead
         draw_sprites_under_player(screen, sprites_under_player_list, player_x, player_y)
         draw_player(screen, player_sprite, player_frame_counter, player_x, player_y, player_direction)
+        player1.draw_player(screen, game_countdown)
 
-        ### the tiles that each corner of the player is on
-        player_tile_x_left = int((player_x)//TILE_WIDTH)
-        player_tile_x_right = int((player_x+PLAYER_WIDTH)//TILE_WIDTH)
-        player_tile_y_top = int((player_y)//TILE_HEIGHT)
-        player_tile_y_bot = int((player_y+PLAYER_HEIGHT)//TILE_HEIGHT)
-        player_tile_center_x = int((player_x+PLAYER_WIDTH/2)//TILE_WIDTH)
-        player_tile_center_y = int((player_y+PLAYER_HEIGHT/2)//TILE_HEIGHT)
         ### draw rectangle around player
         ##pygame.draw.rect(screen, (255,0,0), (player_x, player_y, PLAYER_WIDTH, PLAYER_HEIGHT), 2)
         for event in pygame.event.get():
@@ -258,65 +325,67 @@ def main():
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             ## if we move in this direction and would change to the next tile
-            if player_tile_x_left != int( (player_x-player_movement_per_frame)//TILE_WIDTH):
+            if player1.get_tile_x_left() != int( (player1.x-player_movement_per_frame)//TILE_WIDTH):
                 #### This if checks the tile type that top and bottom left corners of the player would move into
-                if int(board[player_tile_x_left-1][player_tile_y_top]) == 1 or int(board[player_tile_x_left-1][player_tile_y_bot]) ==1:
+                if int(board[player1.get_tile_x_left()-1][player1.get_tile_y_top()]) == 1 or int(board[player1.get_tile_x_left()-1][player1.get_tile_y_bot()]) ==1:
                     ##if we're here, one hop left is a new tile but the new tile is a wall (block type 1) so don't move
                     pass
-                elif int(board[player_tile_x_left-1][player_tile_y_top]) == 5 or int(board[player_tile_x_left-1][player_tile_y_bot]) == 5:
+                elif int(board[player1.get_tile_x_left()-1][player1.get_tile_y_top()]) == 5 or int(board[player1.get_tile_x_left()-1][player1.get_tile_y_bot()]) == 5:
                     ### tile to the left is toxic, we moved into it so game over
                     game_countdown = -1
                 else:
-                    player_x -= player_movement_per_frame
+                    player1.x -= player_movement_per_frame
             else:
-                player_x -= player_movement_per_frame
+                player1.x -= player_movement_per_frame
         elif keys[pygame.K_DOWN]:
             ## if we move in this direction and the bottom edge of the player would change to the next tile
-            if player_tile_y_bot != int( (player_y+ PLAYER_HEIGHT+player_movement_per_frame)//TILE_HEIGHT):
-                #### This if checks the tile type that bottom corners of the player would move into
-                if int(board[player_tile_x_left][player_tile_y_bot+1]) == 1 or int(board[player_tile_x_right][player_tile_y_bot+1]) ==1:
+            if player1.get_tile_y_bot() != int( (player1.y+ PLAYER_HEIGHT+player_movement_per_frame)//TILE_HEIGHT):
+                #### This if checks the tile type that left and right bottom corners of the player would move into
+                if int(board[player1.get_tile_x_left()][player1.get_tile_y_bot()+1]) == 1 or int(board[player1.get_tile_x_right()][player1.get_tile_y_bot()+1]) ==1:
                     ##if we're here, one hop down is a new tile but the new tile is a wall (block type 1) so don't move
                     pass
-                elif int(board[player_tile_x_left][player_tile_y_bot+1]) == 5 or int(board[player_tile_x_right][player_tile_y_bot+1]) == 5:
+                elif int(board[player1.get_tile_x_left()][player1.get_tile_y_bot()+1]) == 5 or int(board[player1.get_tile_x_right()][player1.get_tile_y_bot()+1]) == 5:
                     ### tile to the bottom is toxic, we moved into it so game over
                     game_countdown = -1
                 else:
-                    player_y += player_movement_per_frame
+                    player1.y += player_movement_per_frame
             else:
-                player_y += player_movement_per_frame ##lower edge of player not entering a new tile via movement
+                player1.y += player_movement_per_frame ##lower edge of player not entering a new tile via movement
         elif keys[pygame.K_RIGHT]: 
             ## if we move in this direction and would change to the next tile
-            if player_tile_x_right != int( (player_x+ PLAYER_WIDTH+player_movement_per_frame)//TILE_WIDTH):
+            if player1.get_tile_x_right() != int( (player1.x+ PLAYER_WIDTH+player_movement_per_frame)//TILE_WIDTH):
                 #### This if checks the tile type that top and bottom right cornersof the player would move into
-                if int(board[player_tile_x_right+1][player_tile_y_top]) == 1 or int(board[player_tile_x_right+1][player_tile_y_bot]) ==1:
+                if int(board[player1.get_tile_x_right()+1][player1.get_tile_y_top()]) == 1 or int(board[player1.get_tile_x_right()+1][player1.get_tile_y_bot()]) ==1:
                     ##if we're here, one hop right is a new tile but the new tile is a wall (block type 1) so don't move
                     pass
-                elif int(board[player_tile_x_right+1][player_tile_y_top]) == 5 or int(board[player_tile_x_right+1][player_tile_y_bot]) == 5:
+                elif int(board[player1.get_tile_x_right()+1][player1.get_tile_y_top()]) == 5 or int(board[player1.get_tile_x_right()+1][player1.get_tile_y_bot()]) == 5:
                     ### tile to the right is toxic, we moved into it so game over
                     game_countdown = -1
                 else:
-                    player_x += player_movement_per_frame
+                    player1.x += player_movement_per_frame
             else:
-                player_x += player_movement_per_frame
+                player1.x += player_movement_per_frame
         elif keys[pygame.K_UP]:
             ## if we move in this direction and would change to the next tile
-            if player_tile_y_top != int( (player_y - player_movement_per_frame)//TILE_HEIGHT):
+            if player1.get_tile_y_top() != int( (player1.y - player_movement_per_frame)//TILE_HEIGHT):
                 #### This if checks the tile type that top and bottom right corners of the player would move into
-                if int(board[player_tile_x_left][player_tile_y_top-1]) == 1 or int(board[player_tile_x_right][player_tile_y_top-1]) ==1:
+                if int(board[player1.get_tile_x_left()][player1.get_tile_y_top()-1]) == 1 or int(board[player1.get_tile_x_right()][player1.get_tile_y_top()-1]) ==1:
                     ##if we're here, one hop up is a new tile but the new tile is a wall (block type 1) so don't move
                     pass
-                elif int(board[player_tile_x_left][player_tile_y_top-1]) == 5 or int(board[player_tile_x_right][player_tile_y_top-1]) == 5:
+                elif int(board[player1.get_tile_x_left()][player1.get_tile_y_top()-1]) == 5 or int(board[player1.get_tile_x_right()][player1.get_tile_y_top()-1]) == 5:
                     ### tile to the top is toxic, we moved into it so game over
                     game_countdown = -1
                 else:
-                    player_y -= player_movement_per_frame
+                    player1.y -= player_movement_per_frame
             else:
-                player_y -= player_movement_per_frame
-            ########## if current tile is a point pill, change to 0 (no barrier i.e. empty space)
-        if board[player_tile_center_x][player_tile_center_y] == 2:
-            board[player_tile_center_x][player_tile_center_y] = 0
+                player1.y -= player_movement_per_frame
+            ########## if current tile is a point pill, change to 0 (no barrier i.e. empty space) and play fire anim there
+        if board[player1.get_tile_at_center_x()][player1.get_tile_at_center_y()] == 2:
+            board[player1.get_tile_at_center_x()][player1.get_tile_at_center_y()] = 0
+            tile_center_x = player1.get_tile_at_center_x()*TILE_WIDTH  ##TILE_WIDTH//2
+            tile_center_y = player1.get_tile_at_center_y()*TILE_HEIGHT - TILE_HEIGHT//2
             ## create pill pop sprite to be added as a list item, nonpermanent for 25 frames, written to screen before player and under it
-            pill_pop = Sprite_list_item(points_pill_popped_sprite_sheet, 0, 0, False, 25, 5,5, player_x, player_y, 2)
+            pill_pop = Sprite_list_item(points_pill_popped_sprite_sheet, 0, 0, False, 25, 5,5, tile_center_x, tile_center_y, 2)
             sprites_under_player_list.append(pill_pop)
             if game_countdown > 0: score += 1 ## add 1 to score
         
@@ -347,11 +416,11 @@ def main():
                 score = 0
                 board = create_board(NUM_TILES_WIDE, NUM_TILES_HIGH)
                 high_score_beaten = False
-                player_x, player_y = WIDTH//2, HEIGHT//2
+                player1.x, player1.y = WIDTH//2, HEIGHT//2
             elif keys[pygame.K_q]: ## Quit the game
                 run = False
 
-        pygame.display.flip()
+        pygame.display.flip()  #### update screen
                 
     pygame.quit()
 
