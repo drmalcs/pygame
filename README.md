@@ -1,6 +1,8 @@
 # pygame
 A game made with pygame - Pacman like, high score, randomised game map, fun animation
-and toxic green blobs (static and not animated) to avoid.
+and toxic green blobs (static and not yet animated) to avoid.
+
+Control the player via the arrow keys on your keyboard to move UP, DOWN, LEFT and RIGHT
 
 Please feel free to clone, rip off, use and abuse.
 
