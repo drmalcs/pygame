@@ -13,7 +13,10 @@ This was written in VS Code with Codium installed for reasonable AI code complet
 TO RUN:
 - check the versions in pyproject.toml and make sure you have the same or greater for those python packages
 - remember, you may have multiple python versions installed so to make sure you are installing the packages for the right version of python, do it in a Python environment (recommended) or install via pip, eg: python -m pip install pygame
-- python3 pacman.py
+- move to the folder that you downloaded so you can see the code folder and then
+- python3 code/pacman.py
+Or possibly
+- python code/pacman.py
 
 There is a video screengrab of a couple of short games being played in drmalcs_pikmon_game_screengrab.webm
 Navigate to it in a web browser to play (or type something like file://path/to/file/)
