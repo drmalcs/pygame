@@ -8,20 +8,22 @@ Please feel free to clone, rip off, use and abuse.
 
 This was written in VS Code with Codium installed for reasonable AI code completion suggestions.
 
-To run:
+TO RUN:
 - check the versions in pyproject.toml and make sure you have the same or greater for those python packages
+- remember, you may have multiple python versions installed so to make sure you are installing the packages for the right version of python, do it in a Python environment (recommended) or install via pip, eg: python -m pip install pygame
 - python3 pacman.py
 
 There is a video screengrab of a couple of short games being played in drmalcs_pikmon_game_screengrab.webm
 Navigate to it in a web browser to play (or type something like file://path/to/file/)
 
-Commands:
-q to quit
-r to restart
+COMMANDS:
+q to Quit
+p to Play
+Arrow keys to move the player around
 
 The highscore will be remembered until you quit the game
 
-I've not yet tested the poetry setup which would setup a python enviromment for you with the correct python and python package versions.
+I've not yet tested the poetry setup which would set up a python enviromment for you with the correct python version and python package versions.
 
 I can't remember where I got the fire animation and the accompanying sprite sheets. It was free to use and abuse. The player character is my own horrible animation.
 
