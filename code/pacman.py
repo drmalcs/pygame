@@ -22,7 +22,7 @@ WIDTH = NUM_TILES_WIDE * TILE_WIDTH
 HEIGHT = NUM_TILES_HIGH * TILE_HEIGHT
 PLAYER_WIDTH = int(TILE_WIDTH *0.8)
 PLAYER_HEIGHT = int(TILE_HEIGHT *0.8)
-COUNTDOWN = 10 ### Length of game in seconds
+COUNTDOWN = 15 ### Length of game in seconds
 PLAYER_NUM_LIVES = 3
 
 def create_board(width, height):
@@ -291,7 +291,7 @@ def main():
     ##print(board) ### print the boards tiles to the console
     run = True
     player_x, player_y, player_direction = WIDTH//2, HEIGHT//2, 'left'  ## temp; 
-    game_countdown, game_countdown_text = COUNTDOWN, str(COUNTDOWN).rjust(3)
+    game_countdown, game_countdown_text = -2, str(COUNTDOWN).rjust(3) ## -2 is <0 so we show the P to PLAY text
     player_frame_counter=0
     player_movement_per_frame = TILE_WIDTH//5
     sprites_under_player_list = []
@@ -409,9 +409,10 @@ def main():
         ## wait for r key to be pressed to restart
             if high_score_beaten:
                 draw_text(screen, "NEW HIGH SCORE! ", 40, WIDTH//10, HEIGHT//5, (255, 200, 255),2)
-            draw_text(screen, 'HIT R TO RESTART --- OR Q TO QUIT', 40, WIDTH//10, HEIGHT//6, (255, 250, 215),2)
+            draw_text(screen, 'HIT P TO PLAY --- OR Q TO QUIT', 40, WIDTH//10, HEIGHT//6, (255, 250, 215),2)
+            draw_text(screen, 'USE ARROW KEYS TO MOVE PLAYER', 40, WIDTH//10, HEIGHT//4, (245, 250, 250),2)
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_r]:  ## Restart the game and try again
+            if keys[pygame.K_p]:  ## Restart the game and try again
                 game_countdown = COUNTDOWN
                 score = 0
                 board = create_board(NUM_TILES_WIDE, NUM_TILES_HIGH)
