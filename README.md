@@ -12,7 +12,7 @@ This was written in VS Code with Codium installed for reasonable AI code complet
 
 TO RUN:
 - check the versions in pyproject.toml and make sure you have the same or greater for those python packages
-- remember, you may have multiple python versions installed so to make sure you are installing the packages for the right version of python, do it in a Python environment (recommended) or install via pip, eg: python -m pip install pygame
+- remember, you may have multiple python versions installed so to make sure you are installing the packages for the right version of python, do it in a Python environment (recommended) or install via pip, eg: "python -m pip install pygame" or "python3 -m pip install pygame"
 - move to the folder that you downloaded so you can see the code folder and then
 - python3 code/pacman.py
 Or possibly
