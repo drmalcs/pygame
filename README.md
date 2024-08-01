@@ -2,6 +2,8 @@
 A game made with pygame - Pacman like, high score, randomised game map, fun animation
 and toxic green blobs (static and not yet animated) to avoid.
 
+There is a WEBM movie showing the game, sitting alongside this file. Download then navigate to it with any web browser to play the movie.
+
 Control the player via the arrow keys on your keyboard to move UP, DOWN, LEFT and RIGHT
 
 Please feel free to clone, rip off, use and abuse.
