@@ -4,6 +4,9 @@ and toxic green blobs (static and not yet animated) to avoid.
 
 There is a WEBM movie showing the game, sitting alongside this file. Download then navigate to it with any web browser to play the movie.
 
+I would write this totally differently and more modularly if starting again (using the sprite class too). I got misdirected
+by a simple guide which wasn't wrong but wasn't geared to a sprite based game.
+
 Control the player via the arrow keys on your keyboard to move UP, DOWN, LEFT and RIGHT
 
 Please feel free to clone, rip off, use and abuse.
