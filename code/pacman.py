@@ -9,6 +9,8 @@ import numpy as np
 import pygame
 import random
 import sys
+###### import classes from this projects other files
+import mobile_character as mob_char
 
 
 pygame.init()
@@ -81,7 +83,6 @@ def create_board(width, height):
 def draw_board(screen, board):
     """
     Draws a board on the given screen using the provided board array.
-
     Parameters:
         screen (pygame.Surface): The surface on which the board will be drawn.
         board (numpy.ndarray): The array representing the board. Each element in the array represents a tile on the board.
@@ -92,10 +93,8 @@ def draw_board(screen, board):
                 3: Unused tile.
                 4: Unused tile.
                 5: Green toxic blob tile.
-
     Returns:
         None
-
     Raises:
         SystemExit: If an unhandled tile type is encountered.
     """
@@ -132,6 +131,16 @@ def draw_board(screen, board):
 def draw_player(screen, player_sprite, counter, player_x, player_y, direction):
     ## directions: 0=A=Left; 1=S=Down; 2=D=Right; 3=W=Up
     ## it always looks left unless it's going right
+    """
+    Draws the player sprite onto the screen at the given position and direction.
+    Parameters:
+        screen (pygame.Surface): The surface to draw onto.
+        player_sprite (list[pygame.Surface]): A list of Surfaces, each representing a player sprite.
+        counter (int): The current frame number to draw.
+        player_x (int): The x position of the top left corner of the player.
+        player_y (int): The y position of the top left corner of the player.
+        direction (int): The direction the player is facing. 0=A=Left, 1=S=Down, 2=D=Right, 3=W=Up.
+    """
     if direction == 0:
         screen.blit(player_sprite[counter//5], (player_x, player_y))
     if direction == 1:
@@ -144,15 +153,24 @@ def draw_player(screen, player_sprite, counter, player_x, player_y, direction):
 
 ################################################################################################################
 def draw_sprites_under_player(screen, sprites_under_player_list, player_x, player_y):
+    """
+    Draws all the sprites in the given list onto the screen.
+    Parameters:
+        screen (pygame.Surface): The surface to draw onto.
+        sprites_under_player_list (list[Sprite_list_item]): A list of Sprite_list_item objects, each representing a sprite to draw.
+        player_x (int): The x position of the top left corner of the player.
+        player_y (int): The y position of the top left corner of the player.
+    """
     for sprite in sprites_under_player_list:
         ## if sprite lifespan is zero, don't draw but instead remove from list
         ## temporary sprites will have lifespan reduced as time goes on
         if sprite.lifespan == 0:
             sprites_under_player_list.remove(sprite)
             continue
-        ### draw the sprite from the sprite sheet and index it using lifespan
+        ### the position of the correct part of the sprite sheet that we'll draw
         sprite_x_in_sheet = sprite.get_curr_x(sprite.lifespan//sprite.life_multiplier)
         sprite_y_in_sheet = sprite.get_curr_y(sprite.lifespan//sprite.life_multiplier)
+        ## x and y of where on board the sprite should be drawn
         sprite_x_in_board = PLAYER_WIDTH + sprite.initial_player_x - sprite.sprite_width_px//2
         sprite_y_in_board = sprite.initial_player_y - sprite.sprite_height_px//2
         screen.blit(sprite.sprite_sheet, (sprite_x_in_board,sprite_y_in_board), (sprite_x_in_sheet,sprite_y_in_sheet,sprite.sprite_width_px,sprite.sprite_height_px)) ##ignore x and y stored in sprite
@@ -163,6 +181,20 @@ def draw_sprites_under_player(screen, sprites_under_player_list, player_x, playe
 ################################################################################################################
 class Sprite_list_item:
     def __init__(self,sprite_sheet, pos_x, pos_y, perm, lifespan, num_sprites_in_col, num_sprites_in_row, player_x, player_y, life_multiplier=1):
+        """
+        Creates a new Sprite_list_item from a sprite sheet and position.
+        Parameters:
+            sprite_sheet (pygame.Surface): The sprite sheet to draw from.
+            pos_x (int): The x position of the top left corner of the sprite.
+            pos_y (int): The y position of the top left corner of the sprite.
+            perm (bool): Whether the sprite is permanent or temporary.
+            lifespan (int): The number of frames the sprite should be alive for.
+            num_sprites_in_col (int): The number of sprites in the sprite sheet per column.
+            num_sprites_in_row (int): The number of sprites in the sprite sheet per row.
+            player_x (int): The x position of the top left corner of the player.
+            player_y (int): The y position of the top left corner of the player.
+            life_multiplier (int): The multiplier to apply to the sprite's lifespan. Defaults to 1.
+        """
         self.sprite_sheet = sprite_sheet
         self.sprite_sheet.set_colorkey((0,0,0))
         self.x = pos_x
@@ -187,6 +219,19 @@ class Sprite_list_item:
 class player:
     def __init__(self, sprite_sheet, pos_x, pos_y, direction = 'left', num_lives = PLAYER_NUM_LIVES,
                  width=PLAYER_WIDTH, height=PLAYER_HEIGHT, tile_width=TILE_WIDTH, tile_height=TILE_HEIGHT):
+        """
+        Creates a new player object from a sprite sheet and position.
+        Parameters:
+            sprite_sheet (pygame.Surface): The sprite sheet to draw from.
+            pos_x (int): The x position of the top left corner of the player.
+            pos_y (int): The y position of the top left corner of the player.
+            direction (str): The direction the player is facing. Can be 'left', 'right', 'up', or 'down'. Defaults to 'left'.
+            num_lives (int): The number of lives the player has. Defaults to PLAYER_NUM_LIVES.
+            width (int): The width of the player on screen. Defaults to PLAYER_WIDTH.
+            height (int): The height of the player on screen. Defaults to PLAYER_HEIGHT.
+            tile_width (int): The width of one tile in the game. Defaults to TILE_WIDTH.
+            tile_height (int): The height of one tile in the game. Defaults to TILE_HEIGHT.
+        """
         self.sprite_sheet = sprite_sheet
         self.x = pos_x
         self.y = pos_y
@@ -204,7 +249,6 @@ class player:
     def print(self):
         print(self.get_tile_x_left(), self.get_tile_x_right(), self.get_tile_y_top(), self.get_tile_y_bot(), self.x, self.y)
             
-
     def get_tile_x_left(self):
         return int((self.x)//self.tile_width)
     def get_tile_x_right(self):
@@ -229,6 +273,9 @@ class player:
         self.num_lives -= 1
 
     def new_tile_type_after_move(self, move_dist_in_px, direction):
+        """
+        Returns the tile type the player would be on IF they moved a certain distance in a certain direction.
+        """
         if direction == 'left':
             return int( (self.x-move_dist_in_px)//self.tile_width)
         elif direction == 'right':
@@ -251,8 +298,23 @@ class player:
 
 
 ####END OF PLAYER CLASS#########################################################################################
+            
+
 ################################################################################################################
 def draw_text(screen, text, size, x, y, colour=(255, 255, 255), mode=0):
+    """
+    Draws text onto the screen at the given position and size.
+    Parameters:
+        screen (pygame.Surface): The surface to draw onto.
+        text (str): The text to draw.
+        size (int): The size of the text to draw.
+        x (int): The x position of the top left corner of the text.
+        y (int): The y position of the top left corner of the text.
+        colour (tuple[int, int, int]): The colour to draw the text in. Defaults to (255, 255, 255).
+        mode (int): The mode to draw the text in. Can be 0 for normal, 1 for black background, or 2 for drop shadow. Defaults to 0.
+    Returns:
+        None
+    """
     font = pygame.font.Font(pygame.font.get_default_font(), size)
     if mode == 1: ## draw same text as black background
         text_bg = font.render( text, True, (0, 0, 0) )
@@ -275,6 +337,7 @@ def main():
     screen = pygame.display.set_mode([WIDTH, HEIGHT])
     timer = pygame.time.Clock()
     pygame.time.set_timer(pygame.USEREVENT, 1000)
+    current_frame = 0
     fps = 40
     score = 0
     high_score = 0
@@ -284,6 +347,16 @@ def main():
     for i in range(1,12):
         player_sprite.append(pygame.transform.scale(pygame.image.load(f'img/pikmon_sequence/pikmon-{i:03d}.png'),(PLAYER_WIDTH,PLAYER_HEIGHT)))
     points_pill_popped_sprite_sheet = pygame.image.load('img/Spritesheets/RocketFire2Sheet.png')
+
+    #### Green bobbing blob sprite
+    bobbing_blob_char_sprite_sheet = pygame.image.load('img/Spritesheets/greenBlobSheet.png').convert_alpha()
+    bobbing_blob_char_sprite_sheet_scaled = pygame.transform.scale(bobbing_blob_char_sprite_sheet, (TILE_WIDTH*8, TILE_HEIGHT)) ### make it fit on one tile
+    orig_char_width_in_px_on_sprite_sheet = 200
+    char_scale_factor = TILE_WIDTH/orig_char_width_in_px_on_sprite_sheet
+    bobbing_blob_char = mob_char.mobile_character(bobbing_blob_char_sprite_sheet_scaled, 500,500,8, 40, 40,
+                                          200/char_scale_factor,200/char_scale_factor, TILE_WIDTH, TILE_HEIGHT)
+    #### if we hit a blob then we will display the animated blob defined above
+    fatal_blob_xy = (-100,-100)  ## off the screen, initial value
 
     pygame.display.set_caption("Terrible Pacman-Like Rehash by Malc")
 
@@ -298,9 +371,10 @@ def main():
 
     player1 = player(player_sprite, WIDTH//2, HEIGHT//2, player_direction, num_lives = PLAYER_NUM_LIVES,
                  width=PLAYER_WIDTH, height=PLAYER_HEIGHT, tile_width=TILE_WIDTH, tile_height=TILE_HEIGHT)
- #### TODO: add player into while loop in parallel I guess
+ ############## MAIN LOOP ################
     while run:
         timer.tick(fps)
+        current_frame += 1
         if player_frame_counter < 19:
             player_frame_counter += 1
         else:
@@ -312,6 +386,7 @@ def main():
         draw_sprites_under_player(screen, sprites_under_player_list, player_x, player_y)
         draw_player(screen, player_sprite, player_frame_counter, player_x, player_y, player_direction)
         player1.draw_player(screen, game_countdown)
+
 
         ### draw rectangle around player
         ##pygame.draw.rect(screen, (255,0,0), (player_x, player_y, PLAYER_WIDTH, PLAYER_HEIGHT), 2)
@@ -330,8 +405,13 @@ def main():
                 if int(board[player1.get_tile_x_left()-1][player1.get_tile_y_top()]) == 1 or int(board[player1.get_tile_x_left()-1][player1.get_tile_y_bot()]) ==1:
                     ##if we're here, one hop left is a new tile but the new tile is a wall (block type 1) so don't move
                     pass
-                elif int(board[player1.get_tile_x_left()-1][player1.get_tile_y_top()]) == 5 or int(board[player1.get_tile_x_left()-1][player1.get_tile_y_bot()]) == 5:
+                elif int(board[player1.get_tile_x_left()-1][player1.get_tile_y_top()]) == 5:
                     ### tile to the left is toxic, we moved into it so game over
+                    fatal_blob_xy = ((player1.get_tile_x_left()-1)*TILE_WIDTH, player1.get_tile_y_top()*TILE_HEIGHT)
+                    game_countdown = -1
+                elif int(board[player1.get_tile_x_left()-1][player1.get_tile_y_bot()]) == 5:
+                    ### tile to the left is toxic, we moved into it so game over
+                    fatal_blob_xy = ((player1.get_tile_x_left()-1)*TILE_WIDTH, player1.get_tile_y_bot()*TILE_HEIGHT)
                     game_countdown = -1
                 else:
                     player1.x -= player_movement_per_frame
@@ -344,8 +424,12 @@ def main():
                 if int(board[player1.get_tile_x_left()][player1.get_tile_y_bot()+1]) == 1 or int(board[player1.get_tile_x_right()][player1.get_tile_y_bot()+1]) ==1:
                     ##if we're here, one hop down is a new tile but the new tile is a wall (block type 1) so don't move
                     pass
-                elif int(board[player1.get_tile_x_left()][player1.get_tile_y_bot()+1]) == 5 or int(board[player1.get_tile_x_right()][player1.get_tile_y_bot()+1]) == 5:
+                elif int(board[player1.get_tile_x_left()][player1.get_tile_y_bot()+1]) == 5:
+                    fatal_blob_xy = (player1.get_tile_x_left()*TILE_WIDTH, (player1.get_tile_y_bot()+1)*TILE_HEIGHT)
+                    game_countdown = -1
+                elif int(board[player1.get_tile_x_right()][player1.get_tile_y_bot()+1]) == 5:
                     ### tile to the bottom is toxic, we moved into it so game over
+                    fatal_blob_xy = (player1.get_tile_x_right()*TILE_WIDTH, (player1.get_tile_y_bot()+1)*TILE_HEIGHT)
                     game_countdown = -1
                 else:
                     player1.y += player_movement_per_frame
@@ -358,8 +442,13 @@ def main():
                 if int(board[player1.get_tile_x_right()+1][player1.get_tile_y_top()]) == 1 or int(board[player1.get_tile_x_right()+1][player1.get_tile_y_bot()]) ==1:
                     ##if we're here, one hop right is a new tile but the new tile is a wall (block type 1) so don't move
                     pass
-                elif int(board[player1.get_tile_x_right()+1][player1.get_tile_y_top()]) == 5 or int(board[player1.get_tile_x_right()+1][player1.get_tile_y_bot()]) == 5:
+                elif int(board[player1.get_tile_x_right()+1][player1.get_tile_y_top()]) == 5:
                     ### tile to the right is toxic, we moved into it so game over
+                    fatal_blob_xy = ((player1.get_tile_x_right()+1)*TILE_WIDTH, player1.get_tile_y_top()*TILE_HEIGHT)
+                    game_countdown = -1
+                elif int(board[player1.get_tile_x_right()+1][player1.get_tile_y_bot()]) == 5:
+                    ### tile to the right is toxic, we moved into it so game over
+                    fatal_blob_xy = ((player1.get_tile_x_right()+1)*TILE_WIDTH, player1.get_tile_y_bot()*TILE_HEIGHT)
                     game_countdown = -1
                 else:
                     player1.x += player_movement_per_frame
@@ -372,8 +461,13 @@ def main():
                 if int(board[player1.get_tile_x_left()][player1.get_tile_y_top()-1]) == 1 or int(board[player1.get_tile_x_right()][player1.get_tile_y_top()-1]) ==1:
                     ##if we're here, one hop up is a new tile but the new tile is a wall (block type 1) so don't move
                     pass
-                elif int(board[player1.get_tile_x_left()][player1.get_tile_y_top()-1]) == 5 or int(board[player1.get_tile_x_right()][player1.get_tile_y_top()-1]) == 5:
+                elif int(board[player1.get_tile_x_left()][player1.get_tile_y_top()-1]) == 5:
                     ### tile to the top is toxic, we moved into it so game over
+                    fatal_blob_xy = (player1.get_tile_x_left()*TILE_WIDTH, (player1.get_tile_y_top()-1)*TILE_HEIGHT)
+                    game_countdown = -1
+                elif int(board[player1.get_tile_x_right()][player1.get_tile_y_top()-1]) == 5:
+                    ### tile to the top is toxic, we moved into it so game over
+                    fatal_blob_xy = (player1.get_tile_x_right()*TILE_WIDTH, (player1.get_tile_y_top()-1)*TILE_HEIGHT)
                     game_countdown = -1
                 else:
                     player1.y -= player_movement_per_frame
@@ -402,6 +496,9 @@ def main():
                 draw_text(screen, "My five year old could've done better", 40, WIDTH//10, HEIGHT*55//100, (255, 0, 55),1)
                 draw_text(screen, "(and she's a Jack Russel Terrier)", 30, WIDTH//10, HEIGHT*65//100, (255, 0, 55),1)
         elif game_countdown == -1:
+            ### draw bobbing_blob character
+            bobbing_blob_char.x, bobbing_blob_char.y = fatal_blob_xy
+            bobbing_blob_char.draw(screen, current_frame)
             draw_text(screen, "O U C H Y ! GAME OVER DUDE!", 45, WIDTH//10, HEIGHT//2, (255, 0, 55),1)
             draw_text(screen, "**you hit a toxic slime cube**", 45, WIDTH//10, HEIGHT*55//100, (255, 0, 55),1)
             draw_text(screen, "Are you alright? You're looking a wee bit green...", 40, WIDTH//10, HEIGHT*65//100, (255, 0, 55),1)
